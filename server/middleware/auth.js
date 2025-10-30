@@ -6,12 +6,12 @@ const User = require('../models/User');
 // Protect routes - check for valid JWT token
 const protect = async (req, res, next) => {
   let token;
-  
+
   // Check for token in headers
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
   }
-  
+
   // Make sure token exists
   if (!token) {
     return res.status(401).json({
@@ -19,21 +19,21 @@ const protect = async (req, res, next) => {
       error: 'Not authorized to access this route'
     });
   }
-  
+
   try {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     // Get user from token
     req.user = await User.findById(decoded.id);
-    
+
     if (!req.user) {
       return res.status(401).json({
         success: false,
         error: 'No user found with this token'
       });
     }
-    
+
     // Check if user is active
     if (!req.user.isActive) {
       return res.status(401).json({
@@ -41,7 +41,7 @@ const protect = async (req, res, next) => {
         error: 'User account has been deactivated'
       });
     }
-    
+
     next();
   } catch (error) {
     return res.status(401).json({
